@@ -32,7 +32,7 @@ public class UserManager {
         }
 
         User curUser = userList.get(userName);
-        if (curUser.passwd != passwd) {
+        if (!curUser.passwd.equals(passwd)) {
             ret.put(GetUserReturn.status, Status.PASSWORD_INVALID);
             ret.put(GetUserReturn.user, null);
             return ret;
