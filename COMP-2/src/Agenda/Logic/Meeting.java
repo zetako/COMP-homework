@@ -2,6 +2,11 @@ package Agenda.Logic;
 
 import java.util.*;
 
+/**
+ * Representing a single meeting
+ * @author zetako
+ * @version 0.0.1
+ */
 public class Meeting {
     public Integer id;
     public String title;

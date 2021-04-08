@@ -9,8 +9,22 @@ import Agenda.Logic.AgendaLogic;
 import Agenda.Logic.AgendaLogic.Status;
 import Agenda.Logic.Meeting;
 
+/**
+ * Command of Shell, an interface
+ * @author zetako
+ * @version 0.0.1
+ */
 interface Command {
+    /**
+     * parse list of String to members
+     * @param args list of Strings
+     * @return parse success or not (true => success)
+     */
     public Boolean parse(List<String> args);
+    /**
+     * use members to run command's func
+     * @param logic AgendaLogic Instance
+     */
     public void exec(AgendaLogic logic);
 }
 

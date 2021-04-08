@@ -1,7 +1,3 @@
-/** 
-* @author zetako 
-* @version 0.0.1
-*/ 
 package Agenda.Logic;
 
 import java.util.*;

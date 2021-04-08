@@ -2,6 +2,11 @@ package Agenda.Logic;
 
 import java.util.*;
 
+/**
+ * Manage all users
+ * @author zetako
+ * @version 0.0.1
+ */
 public class UserManager {
     private Map<String, User> userList;
 
@@ -21,6 +26,13 @@ public class UserManager {
     enum GetUserReturn {
         status, user
     }
+    /**
+     * get a user, need to pass password check
+     * @param userName user's user name, unique
+     * @param passwd password
+     * @return status NORMAL, NO_USER_BY_NAME, PASSWORD_INVALID
+     * @return user instance of User
+     */
     public EnumMap<GetUserReturn, Object> getUser(String userName, String passwd)
     {
         EnumMap<GetUserReturn, Object> ret = new EnumMap<GetUserReturn, Object>(GetUserReturn.class);
@@ -46,6 +58,13 @@ public class UserManager {
     enum AddUserReturn {
         status,user
     }
+    /**
+     * add a user (register)
+     * @param userName user's user name, unique
+     * @param passwd password
+     * @return status NORMAL, USER_EXISTED
+     * @return user instance of User
+     */
     public EnumMap<AddUserReturn, Object> addUser(String userName, String passwd)
     {
         EnumMap<AddUserReturn, Object> ret = new EnumMap<AddUserReturn, Object>(AddUserReturn.class);
@@ -63,7 +82,12 @@ public class UserManager {
 
         return ret;
     }
-
+    /**
+     * delete a user (never used)
+     * @param userName user's user name, unique
+     * @param passwd password
+     * @return status NORMAL, NO_USER_BY_NAME, PASSWORD_INVALID
+     */
     public Status delUser(String userName, String passwd)
     {
         if (!userList.containsKey(userName)) {

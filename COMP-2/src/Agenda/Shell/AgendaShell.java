@@ -2,11 +2,28 @@ package Agenda.Shell;
 
 import java.lang.reflect.Constructor;
 import java.util.*;
+import java.io.*;
 
 import Agenda.Logic.AgendaLogic;
 
+/**
+ * Shell(CLI) of Agenda System
+ * @author zetako
+ * @version 0.0.1
+ */
 public class AgendaShell {
+    /**
+     * main function, entry point
+     * @param args never used
+     */
     public static void main(String[] args) {
+        shell();
+    }
+    
+    /**
+     * the real function of the shell
+     */
+    public static void shell() {
         System.out.println("Agenda - Meeting Managing System");
         AgendaLogic logic = new AgendaLogic();
         Scanner scan = new Scanner(System.in);
@@ -18,6 +35,12 @@ public class AgendaShell {
         }
         scan.close();
     }
+    /**
+     * run a line of Command
+     * @param commandLine a line of command
+     * @param logic the AgendaLogic Instance
+     * @return continue or not (false => continue)
+     */
     private static Boolean runCommand(String commandLine, AgendaLogic logic) {
         List<String> tmpList = new ArrayList<String>(Arrays.asList(commandLine.split(" ")));
         while (tmpList.get(0).equals("")) {
@@ -29,7 +52,22 @@ public class AgendaShell {
         if (tmp.equals("Exit")) {
             return true;
         } else if (tmp.equals("Batch")) {
-            //todo
+            try {
+                FileInputStream inputStream = new FileInputStream(tmpList.get(0));
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                    
+                String str = null;
+                while((str = bufferedReader.readLine()) != null)
+                {
+                    System.out.println("(batch) $ "+str);
+                    runCommand(str, logic);
+                }
+                    
+                inputStream.close();
+                bufferedReader.close();
+            } catch (IOException e) {
+                System.out.println("Error when reading file");
+            }
             return false;
         }
 
@@ -50,6 +88,11 @@ public class AgendaShell {
 
         return false;
     }
+    /**
+     * a private method for upper first letter of string
+     * @param src
+     * @return
+     */
     private static String upper(String src) {
         return src.substring(0,1).toUpperCase()+src.substring(1);
     }

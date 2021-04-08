@@ -1,12 +1,14 @@
 all: bulid run
 
-bulid : bin/Logic/AgendaLogic.class bin/Shell/AgendaShell.class
+bulid : bin/Agenda/Logic/AgendaLogic.class bin/Agenda/Shell/AgendaShell.class bin/AgendaService.class
 
-bin/Shell/AgendaShell.class :
+bin/AgendaService.class :
+	cd src; javac -d ../bin AgendaService.java -Xlint:unchecked
+bin/Agenda/Shell/AgendaShell.class :
 	cd src; javac -d ../bin Agenda/Shell/*.java -Xlint:unchecked
 
-bin/Logic/AgendaLogic.class :
+bin/Agenda/Logic/AgendaLogic.class :
 	cd src; javac -d ../bin Agenda/Logic/*.java -Xlint:unchecked
 
 run :
-	cd bin; java Agenda.Shell.AgendaShell
+	cd bin; java AgendaService
