@@ -49,6 +49,19 @@ endef
 timetest: build
 	@python src/gen.py 100000 > testcases/tmpcase.infix
 	@cd bin; java -Xss32M Postfix time loop < ../testcases/tmpcase.infix
-	@cd bin; java -Xss32M Postfix time reduce < ../testcases/tmpcase.infix
+	@cd bin; java -Xss32M Postfix time recursion < ../testcases/tmpcase.infix
 	@cat bin/result.log
 	@-rm testcases/tmpcase.infix bin/result.log
+
+repeattest: build
+	@for index in {1..100}; do \
+		./src/gen.c 500000 > testcases/tmpcase.infix; \
+		cd bin; \
+		java -Xss32M Postfix record loop < ../testcases/tmpcase.infix > /dev/null; \
+		java -Xss32M Postfix record recursion < ../testcases/tmpcase.infix > /dev/null; \
+		cd ..; \
+		rm testcases/tmpcase.infix; \
+		echo $$index; \
+	done
+	@cd src; python avg.py
+	@-rm bin/recursion-record.log bin/loop-record.log
