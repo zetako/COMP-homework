@@ -1,7 +1,16 @@
+/** 
+* @author zetako 
+* @version 0.0.1
+*/ 
 package Agenda.Logic;
 
 import java.util.*;
 
+/**
+ * Logic of Agenda System
+ * @author zetako
+ * @version 0.0.1
+ */
 public class AgendaLogic {
     private UserManager userMgr;
     private MeetingManager meetMgr;
@@ -21,7 +30,12 @@ public class AgendaLogic {
         INVALID_DATE,
         MEETING_NOT_FOUND
     }
-
+    /**
+     * private function to validate a pair of <userName, password>
+     * @param userName user's user name, unique
+     * @param passwd password
+     * @return return NORMAL, NO_USER_BY_NAME, PASSWORD_INVALID, only NORMAL means Pass
+     */
     private Status validateAccount(String userName, String passwd)
     {
         EnumMap<UserManager.GetUserReturn, Object> tmp = userMgr.getUser(userName, passwd);
@@ -37,7 +51,12 @@ public class AgendaLogic {
                 return Status.ERROR;
         }
     }
-
+    /**
+     * register a user
+     * @param userName user's user name, unique
+     * @param passwd password
+     * @return return NORMAL, NO_USER_ALREADY_EXIST, NORMAL means Pass
+     */
     public Status register(String userName, String passwd)
     {
         EnumMap<UserManager.AddUserReturn, Object> tmp = userMgr.addUser(userName, passwd);
@@ -52,9 +71,20 @@ public class AgendaLogic {
         }
     }
     
-    enum AddReturn {
+    public enum AddReturn {
         status, id
     }
+    /**
+     * add a meeting
+     * @param userName user's user name, unique
+     * @param passwd password
+     * @param other the other user's name
+     * @param start start date, use java.util.Date
+     * @param end end date, use java.util.Date
+     * @param title meeting's title
+     * @return status NORMAL, NO_USER_BY_NAME, PASSWORD_INVALID, INVALID_DATE
+     * @return id meeting's id, unique
+     */
     public EnumMap<AddReturn, Object> add(String userName, String passwd, String other, Date start, Date end, String title)
     {
         EnumMap<AddReturn, Object> ret = new EnumMap<AddReturn, Object>(AddReturn.class);
@@ -85,9 +115,18 @@ public class AgendaLogic {
         return ret;
     }
 
-    enum QueryReturn {
+    public enum QueryReturn {
         status, list
     }
+    /**
+     * query meetings within time
+     * @param userName user's user name, unique
+     * @param passwd password
+     * @param start start date, use java.util.Date
+     * @param end end date, use java.util.Date
+     * @return status NORMAL, NO_USER_BY_NAME, PASSWORD_INVALID
+     * @return list list of meeting
+     */
     public EnumMap<QueryReturn, Object> query(String userName, String passwd, Date start, Date end)
     {
         EnumMap<QueryReturn, Object> ret = new EnumMap<QueryReturn, Object>(QueryReturn.class);
@@ -113,7 +152,13 @@ public class AgendaLogic {
                 return ret;
         }
     }
-
+    /**
+     * delete a meeting point by id
+     * @param userName user's user name, unique
+     * @param passwd password
+     * @param meetingId meeting's id, unique
+     * @return NORMAL, NO_USER_BY_NAME, PASSWORD_INVALID, NO_MEETING_BY_ID
+     */
     public Status delete(String userName, String passwd, Integer meetingId)
     {
         Status loginStat = validateAccount(userName, passwd);
@@ -131,7 +176,12 @@ public class AgendaLogic {
                 return Status.ERROR;
         }
     }
-
+    /**
+     * clear user's all meeting
+     * @param userName user's user name, unique
+     * @param passwd password
+     * @return NORMAL, NO_USER_BY_NAME, PASSWORD_INVALID
+     */
     public Status clear(String userName, String passwd)
     {
         Status loginStat = validateAccount(userName, passwd);
