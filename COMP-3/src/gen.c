@@ -16,12 +16,12 @@ int main(int argc, char *argv[]) {
     const char* op = "+-";
 
     srand(time(NULL));
-    int i=0;
+    int i=1;
+    write(STDOUT_FILENO, dig+rand()%10, 1);
     while (i<repeatTime) {
-        write(STDOUT_FILENO, dig+rand()%10, 1);
+        i++;
         write(STDOUT_FILENO, op+rand()%2, 1);
         write(STDOUT_FILENO, dig+rand()%10, 1);
-        i+=1;
     }
     write(STDOUT_FILENO, &"\n", 1);
 }
