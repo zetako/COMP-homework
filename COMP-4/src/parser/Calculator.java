@@ -4,6 +4,7 @@ package parser;
  * Science, SUN YAT-SEN UNIVERSITY. All rights reserved.
 **/
 
+import exceptions.*;
 
 /**
  * Main program of the expression based calculator ExprEval
