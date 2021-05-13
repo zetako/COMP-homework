@@ -6,11 +6,11 @@ import exceptions.*;
 public class Token {
     private String token;
     public enum TokenType {
-        oprend_dec, oprend_bool, operator
+        oprend_dec, oprend_bool, operator, function
     };
     private TokenType type;
 
-    private static final String operatorStr = "(,),sin,cos,max,min,-,^,*,/,+,=,<>,<,<=,>,>=,!,&,|,?,:";
+    private static final String operatorStr = "(,),-,^,*,/,+,=,<>,<,<=,>,>=,!,&,|,?,:";
     public static final Set<String> operatorSet = new HashSet<String>(Arrays.asList(operatorStr.split(",")));
 
     public Token(String _token, TokenType _type) throws LexicalException{
@@ -25,6 +25,28 @@ public class Token {
     }
     public TokenType getType() {
         return type;
+    }
+    public Double getDoubleValue() throws Exception {
+        if (type != TokenType.oprend_dec) {
+            throw new Exception();
+        }
+        return Double.parseDouble(token);
+    }
+    public Boolean getBooleanValue() throws Exception {
+        if (type != TokenType.oprend_bool) {
+            throw new Exception();
+        }
+        switch (token) {
+            case "true":
+                return true;
+            case "false":
+                return false; 
+            default:
+                throw new Exception();
+        }
+    }
+    public Boolean equals(Token otherToken) {
+        return (token.equals(otherToken.token)) && (type == otherToken.type);
     }
 
     public Boolean validate() throws LexicalException {
@@ -50,5 +72,6 @@ public class Token {
                 throw new LexicalException();
         }
     }
+
     
 }
