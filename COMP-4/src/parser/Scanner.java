@@ -25,15 +25,47 @@ public class Scanner {
     private Boolean funcScan() {
 
     }
-    private Boolean decState() {
+    private Boolean decState() throws ExpressionException{
+        String tmp = lookhead(1);
+        Character tmpChar = tmp.charAt(0);
         switch (stateCode) {
             case 0:
                 start = lookaheadIndex;
                 end = lookaheadIndex;
+
+                if (Character.isDigit(tmpChar)) {
+                    stateCode = 1;
+                    end += 1;
+                    lookaheadIndex += 1;
+                } else {
+                    throw new IllegalDecimalException("Illegal char \"%s\" when parsing decimal at pos %d".formatted(tmp, lookaheadIndex));
+                }
                 break;
-        
+            case 1:
+                if (Character.isDigit(tmpChar)) {
+                    stateCode = 1;
+                    end += 1;
+                    lookaheadIndex += 1;
+                } else if (tmpChar == 'E' || tmpChar == 'e') {
+                    stateCode = 4;
+                    end += 1;
+                    lookaheadIndex += 1;
+                } else if (tmpChar == '.') {
+                    stateCode = 2;
+                    end += 1;
+                    lookaheadIndex += 1;
+                } else {
+                    throw new IllegalDecimalException("Illegal char \"%s\" when parsing decimal at pos %d, expected [0-9]/E/e/.".formatted(tmp, lookaheadIndex));
+                }
+                break;
+            case 2:
+                if (Character.isDigit(tmpChar)) {
+                    stateCode = 2;
+                    end += 1;
+                    lookaheadIndex += 1;
+                } else 
             default:
-                break;
+                throw new IllegalDecimalException();
         }
     }
     private Boolean decScan() {
