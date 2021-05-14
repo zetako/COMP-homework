@@ -12,3 +12,6 @@ bin/Agenda/Logic/AgendaLogic.class :
 
 run :
 	cd bin; java AgendaService
+
+javadoc : 
+	cd src; javadoc -private -d ../doc Agenda.Logic Agenda.Shell

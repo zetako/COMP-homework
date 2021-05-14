@@ -27,7 +27,7 @@ public class AgendaLogic {
         MEETING_NOT_FOUND
     }
     /**
-     * private function to validate a pair of <userName, password>
+     * private function to validate a pair of {@code <userName, password>}
      * @param userName user's user name, unique
      * @param passwd password
      * @return return NORMAL, NO_USER_BY_NAME, PASSWORD_INVALID, only NORMAL means Pass

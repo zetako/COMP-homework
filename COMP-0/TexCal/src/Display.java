@@ -1,5 +1,3 @@
-package com.zetako.Display;
-
 import java.util.*;
 
 public class Display {
@@ -29,6 +27,7 @@ public class Display {
         {
             System.out.println(Integer.toString(i)+"\t"+options[i]);
         }
+        System.out.print("Input Operation No.: ");
         
         char optChar=(char) System.in.read();
         int opt=Integer.parseInt(String.valueOf(optChar));

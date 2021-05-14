@@ -1,14 +1,32 @@
 import java.io.*;
 
+/**
+ * Logic of Postfix parser
+ * @author zetako
+ * @version 0.0.1
+ */
 class Parser {
+/**
+ * lookahead for all parser
+ */
 	static int lookahead;
+/**
+ * the position of now parsing token
+ */
 	int pos;
-
+/**
+ * constror of Parser, init lookahead
+ * @throws IOException io error is no catch by parser
+ */
 	public Parser() throws IOException {
 		lookahead = System.in.read();
 		pos = 0;
 	}
 
+/**
+ * loop version of expr, start point of parsing
+ * @throws IOException io error is no catch by parser
+ */
 	void expr() throws IOException {
 		try {
 			term();
@@ -20,18 +38,27 @@ class Parser {
 		}
 	}
 
-	void exprrecursion() throws IOException {
+/**
+ * recursion version of expr, start point of parsing
+ * @throws IOException io error is no catch by parser
+ */
+	void exprRecursion() throws IOException {
 		try {
 			term();
 			rest();
 		} catch (Error e) {
 			System.out.write('\n');
-			System.out.println("Error when parse: " + e.toString());
+			System.out.println("Error when parse: ");
 			System.out.print(e.getMessage());
 		}
 	}
 
-	void rest() throws IOException {
+/**
+ * resursion version of rest
+ * @throws IOException io error is no catch by parser
+ * @throws Error error catch is not done in non-loop version
+ */
+	void rest() throws IOException,Error {
 		if (lookahead == '+') {
 			match('+');
 			term();
@@ -47,10 +74,12 @@ class Parser {
 		}
 	}
 
-	void restLoop() throws IOException {
-		if (lookahead != '+' && lookahead != '-') {
-			throw new Error(String.format("Syntax error at position %d(\"%c\"), expect operator(+/-)", pos, lookahead));
-		}
+/**
+ * loop version of rest, parse operator part of sentence
+ * @throws IOException io error is no catch by parser
+ * @throws Error throw Syntax Error at op or Invalid Token at op
+ */
+	void restLoop() throws IOException,Error {
 		while(lookahead == '+' || lookahead == '-') {
 			if (lookahead == '+') {
 				match('+');
@@ -62,15 +91,36 @@ class Parser {
 				System.out.write('-');
 			}
 		}
+		if ( Character.isDigit((char)lookahead) ) {
+			throw new Error(String.format("Syntax error at position %d(\"%c\"), expect operator(+/-)", pos, lookahead));
+		} else if (lookahead != -1 && lookahead != 10 && lookahead != 13){
+			throw new Error(String.format("Invalid token \"%c\"(%d) at position %d", lookahead, lookahead, pos));
+		}
 	}
-	void term() throws IOException {
+
+/**
+ * term, parse operand part of sentence
+ * @throws IOException io error is no catch by parser
+ * @throws Error throw Syntax Error at op or Invalid Token at operand(digit)
+ */
+	void term() throws IOException,Error {
 		if (Character.isDigit((char)lookahead)) {
 			System.out.write((char)lookahead);
 			match(lookahead);
-		} else throw new Error(String.format("Syntax error at position %d(\"%c\"), expect operand(0-9)", pos, lookahead));
+		} else if (lookahead != '+' && lookahead != '-') {
+			throw new Error(String.format("Invalid token \"%c\"(%d) at position %d", lookahead, lookahead, pos));
+		} else {
+			throw new Error(String.format("Syntax error at position %d(\"%c\"), expect operand(0-9)", pos, lookahead));
+		}
 	}
 
-	void match(int t) throws IOException {
+/**
+ * match step, check if it's right token
+ * @param t the char to match (integer)
+ * @throws IOException io error is no catch by parser
+ * @throws Error throw a dismatch, normally never used
+ */
+	void match(int t) throws IOException,Error {
 		if (lookahead == t) {
 			lookahead = System.in.read();
 			pos++;
@@ -79,7 +129,17 @@ class Parser {
 	}
 }
 
+/**
+ * Surface of Postfix parser
+ * @author zetako
+ * @version 0.0.1
+ */
 public class Postfix {
+/**
+ * main function as entry point
+ * @param args cmd args
+ * @throws IOException directly throw out when io error occures
+ */
 	public static void main(String[] args) throws IOException {
 		Boolean timeFlag = false;
 		Boolean recursionFlag = false;
@@ -109,7 +169,7 @@ public class Postfix {
 		try {
 			Long start = System.currentTimeMillis();
 			if (recursionFlag) {
-				new Parser().exprrecursion();
+				new Parser().exprRecursion();
 			} else {
 				new Parser().expr();
 			}

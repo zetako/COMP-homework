@@ -9,7 +9,7 @@
 
 从结论上来说，在该程序以及我们修改过的程序中，变量`lookahead`是否具有`static`属性对程序的运行**没有影响**。
 
-`static`属性的主要作用是使这个成员变量与具体的实例无关，由于在我们的程序中，我们始终只初始化一个实例并且使用这个实例进行解析，因此这个程序中是否使用`static`属性是没有影响的。
+`static`属性的主要作用是使这个成员变量与具体的某个实例无关；由于在我们的程序中，我们始终只初始化一个实例并且使用这个实例进行解析，因此这个程序中是否使用`static`属性是没有影响的。
 
 但是，对`lookahead`添加这个属性可以使得它在不同的实例之间保持一致，这使得我们在进行多进程优化等操作时，能够让不同的实例共享一个输入流和lookahead，从而加速解析进程。
 
@@ -63,29 +63,123 @@ Boolean recordFlag = false;
 if (args.length >= 1) {
 	for (Integer i=0; i<args.length; i++) {
 		switch (args[i]) {
-					case "time":
-						timeFlag = true;
-						break;
-					case "recursion":
-						recursionFlag = true;
-						break;
-					case "loop":
-						recursionFlag = false;
-						break;
-					case "record":
-						recordFlag = true;
-						break;
-					default:
-						System.out.println("Wrong Args at pos "+Integer.toString(i)+": "+args[i]);
-						break;
-				}
+            case "time":
+                timeFlag = true;
+                break;
+            case "recursion":
+                recursionFlag = true;
+                break;
+            case "loop":
+                recursionFlag = false;
+                break;
+            case "record":
+                recordFlag = true;
+                break;
+            default:
+                System.out.println("Wrong Args at pos "+Integer.toString(i)+": "+args[i]);
+                break;
+        }
+    }
+}
 ```
 
-我们的最后的测试结果将由一个python脚本处理，某次测试中完成的结果如下：
+我们测试所用的时间由java程序本身统计，并将其输出到文件中；这之后将由一个python脚本处理，得出其平均值：
 
-除此之外，由于我们要求的输入比较大，我们需要重定义jvm运行时的堆栈空间，以防止发生栈溢出的情况。
+```python
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+
+import numpy as np
+
+recursionNum = np.loadtxt("../bin/recursion-record.log")
+# print(recursionNum)
+recursionNum = np.average(recursionNum)
+print("average recursion time:{}ms".format(recursionNum))
+loopNum = np.loadtxt("../bin/loop-record.log")
+# print(loopNum)
+loopNum = np.average(loopNum)
+print("average   loop    time:{}ms".format(loopNum))
+```
+
+某次测试中完成的结果如下：
+
+![image-20210422194440204](img/image-20210422194440204.png)
+
+可以看出，在我们使用500000个操作数，100次重复实验中，我们得出的结果是尾递归的版本确实比循环版本的性能要差一点。
+
+除此之外，由于我们要求的输入比较大，我们需要重定义jvm运行时的堆栈空间，以防止发生栈溢出的情况；因此我们需要在程序时指定参数：
+
+```shell
+java -Xss32M Postfix
+```
 
 ## 3. 错误处理
 
+我们处理两种错误：
 
-## 4. 单元测试
+- 词法错误：出现了非法字符（0-9，+，-之外的字符）
+  - 出现在操作数位置 - 1
+  - 出现在操作符位置 - 2
+- 语法错误：字符出现在错误的位置
+  - 无效的操作符 - 3
+  - 无效的操作数 - 4
+
+我们针对循环版本进行错误处理的添加。
+
+每次遇到错误时，我们抛出一个Error，通过这个Error的信息文本来表示错误的类型，位置和原因。
+
+在循环版本中，我们一般在rest部分（`restLoop`函数）捕捉出现在操作符位置的错误（1,3），此时需要注意，我们非法字符的判断应该减去三个表示文件结束的特例：EOF、CR、LF，它们对应的`lookahead`值分别为-1、13、10。因此，我们的错误处理部分如下表示：
+
+```java
+if ( Character.isDigit((char)lookahead) ) {
+    throw new Error(String.format("Syntax error at position %d(\"%c\"), expect operator(+/-)", pos, lookahead));
+} else if (lookahead != -1 && lookahead != 10 && lookahead != 13){
+    throw new Error(String.format("Invalid token \"%c\"(%d) at position %d", lookahead, lookahead, pos));
+}
+```
+
+然后，我们会在`term`函数中处理出现在操作数位置的错误（2,4），此时就不需要考虑上述的特例了：
+
+```java
+void term() throws IOException {
+    if (Character.isDigit((char)lookahead)) {
+        System.out.write((char)lookahead);
+        match(lookahead);
+    } else if (lookahead != '+' && lookahead != '-') {
+        throw new Error(String.format("Invalid token \"%c\"(%d) at position %d", lookahead, lookahead, pos));
+    } else {
+        throw new Error(String.format("Syntax error at position %d(\"%c\"), expect operand(0-9)", pos, lookahead));
+    }
+}
+```
+
+至此，我们应该能针对上面分析的错误各自抛出对应的错误对象，我们仅需要在解析函数中，在try-catch块中将错误信息打印即可：
+
+```java
+void expr() throws IOException {
+    try {
+        term();
+        restLoop();
+    } catch (Error e) {
+        System.out.write('\n');
+        System.out.println("Error when parse");
+        System.out.print(e.getMessage());
+    }
+}
+```
+
+针对上面分析的4种错误，我们的测试如下：
+
+![image-20210422205209513](img/image-20210422205209513.png)
+
+![image-20210422205227568](img/image-20210422205227568.png)
+
+![image-20210422205257139](img/image-20210422205257139.png)
+
+![image-20210422205308670](img/image-20210422205308670.png)
+
+另外，对于项目中已经提供的测试用例，我将其整合在makefile中，使用`make testcase`进行测试：
+
+![image-20210422212051767](img/image-20210422212051767.png)
+
+![image-20210422212100094](img/image-20210422212100094.png)

@@ -39,7 +39,7 @@ public class AgendaShell {
      * run a line of Command
      * @param commandLine a line of command
      * @param logic the AgendaLogic Instance
-     * @return continue or not (false => continue)
+     * @return continue or not (false = continue)
      */
     private static Boolean runCommand(String commandLine, AgendaLogic logic) {
         List<String> tmpList = new ArrayList<String>(Arrays.asList(commandLine.split(" ")));
@@ -90,8 +90,8 @@ public class AgendaShell {
     }
     /**
      * a private method for upper first letter of string
-     * @param src
-     * @return
+     * @param src source string
+     * @return  string that changed
      */
     private static String upper(String src) {
         return src.substring(0,1).toUpperCase()+src.substring(1);

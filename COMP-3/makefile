@@ -13,7 +13,7 @@ doc: src/Postfix.java
 	javadoc -d doc -private src/Postfix.java
 
 run: build
-	cd bin; java Postfix
+	cd bin; java Postfix loop
 
 testcase: $(testcases) build
 

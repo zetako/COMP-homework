@@ -18,7 +18,7 @@ interface Command {
     /**
      * parse list of String to members
      * @param args list of Strings
-     * @return parse success or not (true => success)
+     * @return parse success or not (true = success)
      */
     public Boolean parse(List<String> args);
     /**

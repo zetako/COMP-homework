@@ -1,19 +1,28 @@
-import java.util.ArrayList;
+import java.util.*;
 import org.javatuples.*;
-import com.zetako.Display.*;
+import com.alibaba.fastjson.*;
+import com.alibaba.fastjson.annotation.JSONField;
 
-public class App {
-    taxTable table;
-    public static void main(String[] args) throws Exception {
-        System.out.println("Hello, World!");
-    }
-}
-
-class taxTable
+public class TaxTable
 {
-    ArrayList<taxRow> rows;
+    private ArrayList<TaxRow> rows;
 
-    public double calculate(int incoming)
+    public TaxTable()
+    {
+        rows=new ArrayList<TaxRow>();
+    }
+
+    public void saveToJSON(String fileName)
+    {
+
+    }
+    public void readFromJSON(String fileName)
+    {
+        rows.clear();
+        String JSONString=FileIO.readToString(fileName);
+    }
+
+    public double calculate(double incoming)
     {
         double tax=0;
         int index=0;
@@ -28,19 +37,24 @@ class taxTable
         return tax;
     }
 
-    public void printTable()
+    public ArrayList<Pair<Double,Double>> getTable()
     {
-
+        ArrayList<Pair<Double,Double>> ret=new ArrayList<Pair<Double,Double>>();
+        for (int i=0;i<rows.size();i++)
+        {
+            ret.set(i,rows.get(i).getRow());
+        }
+        return ret;
     }
 }
 
-class taxRow
+class TaxRow
 {
     double tierLen;
     double rate;
     double maxTax;
 
-    public taxRow(double _len,double _rate)
+    public TaxRow(double _len,double _rate)
     {
         tierLen=_len;
         rate=_rate;
@@ -72,5 +86,20 @@ class taxRow
         }
 
         return Pair.with(rest,tax);
+    }
+}
+
+class TaxRowBean
+{
+    @JSONField(name="TierLen")
+    private double TierLen;
+
+    @JSONField(name="TierRate")
+    private double TierRate;
+
+    public TaxRowBean(double len,double rate)
+    {
+        TierLen=len;
+        TierRate=rate;
     }
 }
