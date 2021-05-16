@@ -63,7 +63,9 @@ public class Scanner {
                     stateCode = 2;
                     end += 1;
                     lookaheadIndex += 1;
-                } else 
+                } else {
+                    throw new IllegalDecimalException("Illegal char \"%s\" when parsing decimal at pos %d, expected [0-9]/E/e/.".formatted(tmp, lookaheadIndex));
+                }
             default:
                 throw new IllegalDecimalException();
         }
@@ -89,7 +91,7 @@ public class Scanner {
             Token tmpToken = new Token(tmp, TokenType.oprend_bool);
             tokenStream.add(tmpToken);
             } else {
-                throw new IllegalSymbolException("Illegal symbol \"" + tmp + "\" at position " + lookaheadIndex);
+                throw new IllegalSymbolException("Illegal symbol \"%s\" at position %d".formatted(tmp, lookaheadIndex));
             }
         }
         return true;
@@ -108,7 +110,7 @@ public class Scanner {
                 Token tmpToken = new Token(tmp, TokenType.operator);
                 tokenStream.add(tmpToken);
             } else {
-                throw new IllegalSymbolException("Illegal symbol \"" + tmp + "\" at position " + lookaheadIndex);
+                throw new IllegalSymbolException("Illegal symbol \"%s\" at position %d".formatted(tmp, lookaheadIndex));
             }
         }
         return true;
@@ -138,7 +140,7 @@ public class Scanner {
                     stateCode = 0;
                     flag = decScan();
                 } else {
-                    throw new IllegalSymbolException("Illegal symbol \"" + tmp + "\" at position " + lookaheadIndex);
+                    throw new IllegalSymbolException("Illegal symbol \"%s\" at position %d".formatted(lookhead(1), lookaheadIndex));
                 }
                 break;
         }
