@@ -2,6 +2,7 @@ package parser;
 
 import java.util.*;
 import exceptions.*;
+import jdk.internal.org.jline.reader.impl.DefaultParser.Bracket;
 import parser.Token.TokenType;
 
 public class Scanner {
@@ -22,8 +23,53 @@ public class Scanner {
         return rawString.substring(lookaheadIndex, lookaheadIndex + n);
     }
 
-    private Boolean funcScan() {
+    private Boolean funcState() throws ExpressionException {
+        String tmp = lookhead(1);
+        Character tmpChar = tmp.charAt(0);
+        Integer bracketCounter = 0;
+        switch (stateCode) {
+            case 0:
+                switch (tmpChar) {
+                    case 'm':
+                        stateCode = 1;
+                        lookaheadIndex++;
+                        break;
+                    case 's':
+                        stateCode = 7;
+                        lookaheadIndex++;
+                        break;
+                    case 'c':
+                        stateCode = 11;
+                        lookaheadIndex++;
+                        break;
+                    default:
+                        throw new IllegalIdentifierException("Unknown function identifier at pos %d".formatted(lookaheadIndex));
+                }
+                break;
+            case 1:
+                tmp = lookhead(3);
+                if (tmp.equals("ax(") || tmp.equals("in(")) {
+                    tmp = "m" + tmp;
+                    Token tmpToken= new Token(tmp, TokenType.function);
+                    tokenStream.add(tmpToken);
+                    lookaheadIndex += 3;
+                } else {
+                    throw new IllegalIdentifierException("Unknown function identifier at pos %d".formatted(lookaheadIndex));
+                }
+            case 2:
+                
+            default:
+            throw new IllegalSymbolException("Unknown Exception in Function scaning at pos %d".formatted(lookaheadIndex));
+        }
+    }
 
+    private Boolean funcScan() throws ExpressionException {
+        Boolean flag = true;
+        stateCode = 0;
+        while (flag && lookaheadIndex != rawString.length()) {
+            flag = funcState();
+        }
+        return true;
     }
     private Boolean decState() throws ExpressionException{
         String tmp = lookhead(1);
@@ -64,15 +110,68 @@ public class Scanner {
                     end += 1;
                     lookaheadIndex += 1;
                 } else {
-                    throw new IllegalDecimalException("Illegal char \"%s\" when parsing decimal at pos %d, expected [0-9]/E/e/.".formatted(tmp, lookaheadIndex));
+                    throw new IllegalDecimalException("Illegal char \"%s\" when parsing decimal at pos %d, expected [0-9]".formatted(tmp, lookaheadIndex));
                 }
+            case 3:
+                if (Character.isDigit(tmpChar)) {
+                    stateCode = 3;
+                    end += 1;
+                    lookaheadIndex += 1;
+                } else if (tmpChar == 'E' || tmpChar == 'e') {
+                    stateCode = 4;
+                    end += 1;
+                    lookaheadIndex += 1;
+                } else {
+                    throw new IllegalDecimalException("Illegal char \"%s\" when parsing decimal at pos %d, expected [0-9]/E/e".formatted(tmp, lookaheadIndex));
+                }
+                break;
+            case 4:
+                if (Character.isDigit(tmpChar)) {
+                    stateCode = 6;
+                    end += 1;
+                    lookaheadIndex += 1;
+                } else if (tmpChar == '+' || tmpChar == '-') {
+                    stateCode = 5;
+                    end += 1;
+                    lookaheadIndex += 1;
+                } else {
+                    throw new IllegalDecimalException("Illegal char \"%s\" when parsing decimal at pos %d, expected [0-9]/+/-".formatted(tmp, lookaheadIndex));
+                }
+                break;
+            case 5:
+                if (Character.isDigit(tmpChar)) {
+                    stateCode = 6;
+                    end += 1;
+                    lookaheadIndex += 1;
+                } else {
+                    throw new IllegalDecimalException("Illegal char \"%s\" when parsing decimal at pos %d, expected [0-9]".formatted(tmp, lookaheadIndex));
+                }
+                break;
+            case 6:
+                if (Character.isDigit(tmpChar)) {
+                    stateCode = 6;
+                    end += 1;
+                    lookaheadIndex += 1;
+                } else {
+                    stateCode = 7;
+                }
+                break;
+            case 7:
+                Token tmpToken = new Token(rawString.substring(start, end), TokenType.oprend_dec);
+                tokenStream.add(tmpToken);
+                end += 1;
+                start = end;
+                lookaheadIndex += 1;
+                break;
             default:
-                throw new IllegalDecimalException();
+                throw new IllegalDecimalException("Unknown Exception in Decimal Scanning at pos %d".formatted(lookaheadIndex));
         }
+        return true;
     }
-    private Boolean decScan() {
+    private Boolean decScan() throws ExpressionException {
         Boolean flag = true;
-        while (flag && lookaheadIndex == rawString.length()) {
+        stateCode = 0;
+        while (flag && lookaheadIndex != rawString.length()) {
             flag = decState();
         }
         return true;
@@ -153,7 +252,7 @@ public class Scanner {
 
     public Boolean scan() throws ExpressionException {
         Boolean flag = true;
-        while (flag && lookaheadIndex == rawString.length()) {
+        while (flag && lookaheadIndex != rawString.length()) {
             flag = exprScan();
         }
         return true;
