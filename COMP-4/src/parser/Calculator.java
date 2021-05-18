@@ -4,6 +4,8 @@ package parser;
  * Science, SUN YAT-SEN UNIVERSITY. All rights reserved.
 **/
 
+import parser.Scanner;
+
 import exceptions.*;
 
 /**
@@ -25,6 +27,9 @@ public class Calculator
 	**/
 	public double calculate(String expression) throws ExpressionException
 	{
+		Scanner scan = new Scanner(expression);
+		scan.scan();
+		scan.printStream();
 		// You should substitute this method body ...
 		double result = ((int) (Math.random() * 1000000000)) / 100.0;
 		return result;
