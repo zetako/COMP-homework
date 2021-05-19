@@ -20,8 +20,30 @@ public class Token {
         token = _token;
         type = _type;
 
+<<<<<<< HEAD
         OPPTagDefined = false;
 
+=======
+        String typeStr;
+        switch (_type) {
+            case operator:
+                typeStr = "operator";
+                break;
+            case oprend_bool:
+                typeStr = "boolean";
+                break;
+            case oprend_dec:
+                typeStr = "decimal";
+                break;
+            case function:
+                typeStr = "function";
+                break;
+            default:
+                typeStr = "unknown";
+            break;
+        }
+        // System.out.println("%s | %s".formatted(_token, typeStr));
+>>>>>>> f6fe0416dfb52df90fd3d1582285daa5d8d054e0
         validate();
     }
 
@@ -72,6 +94,8 @@ public class Token {
                 if (!operatorSet.contains(token)) {
                     throw new IllegalSymbolException("Invalid Operator : " + token);
                 }
+                return true;
+            case function:
                 return true;
             default:
                 throw new LexicalException();
