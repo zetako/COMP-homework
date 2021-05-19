@@ -1,0 +1,17 @@
+,(,),functionLeft,comma,functionRight,minus,^,*/,+-,compare,!,&,|,?,:,$
+(,shift,equal,shift,error3,error4,shift,shift,shift,shift,shift,shift,shift,shift,shift,error6,error4
+),error1,reduce,error1,reduce,reduce,error1,reduce,reduce,reduce,reduce,error1,reduce,reduce,reduce,reduce,reduce
+functionLeft,shift,error4,shift,shift,equal,shift,shift,shift,shift,shift,shift,shift,shift,shift,error6,error4
+comma,shift,error4,shift,shift,shift,shift,shift,shift,shift,shift,shift,shift,shift,shift,error6,error4
+functionRight,error1,reduce,error1,reduce,reduce,error1,reduce,reduce,reduce,reduce,error1,error7,error7,reduce,reduce,reduce
+minus,shift,reduce,shift,reduce,reduce,shift,reduce,reduce,reduce,reduce,reduce,reduce,reduce,reduce,reduce,reduce
+^,shift,reduce,shift,reduce,reduce,shift,shift,reduce,reduce,reduce,reduce,reduce,reduce,reduce,reduce,reduce
+*/,shift,reduce,shift,reduce,reduce,shift,shift,reduce,reduce,reduce,error1,reduce,reduce,reduce,reduce,reduce
++-,shift,reduce,shift,reduce,reduce,shift,shift,shift,reduce,reduce,error1,reduce,reduce,reduce,reduce,reduce
+compare,shift,reduce,shift,reduce,reduce,shift,shift,shift,shift,reduce,reduce,reduce,reduce,reduce,reduce,reduce
+!,shift,reduce,shift,reduce,reduce,shift,shift,shift,shift,shift,shift,reduce,reduce,reduce,reduce,reduce
+&,shift,reduce,shift,reduce,reduce,shift,shift,shift,shift,shift,shift,reduce,reduce,reduce,reduce,reduce
+|,shift,reduce,shift,reduce,reduce,shift,shift,shift,shift,shift,shift,shift,reduce,reduce,reduce,reduce
+?,shift,error6,shift,error6,error6,shift,shift,shift,shift,shift,shift,shift,shift,error6,shift,error6
+:,shift,reduce,shift,reduce,reduce,shift,shift,shift,shift,shift,shift,shift,shift,error6,error6,reduce
+$,shift,error3,shift,error3,error3,shift,shift,shift,shift,shift,shift,shift,shift,shift,error6,accept

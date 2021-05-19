@@ -10,12 +10,17 @@ public class Token {
     };
     private TokenType type;
 
+    public Boolean OPPTagDefined;
+    public String OPPTag;
+
     private static final String operatorStr = "(,),-,^,*,/,+,=,<>,<,<=,>,>=,!,&,|,?,:";
     public static final Set<String> operatorSet = new HashSet<String>(Arrays.asList(operatorStr.split(",")));
 
     public Token(String _token, TokenType _type) throws LexicalException{
         token = _token;
         type = _type;
+
+        OPPTagDefined = false;
 
         validate();
     }
