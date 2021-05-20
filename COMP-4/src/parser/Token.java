@@ -6,7 +6,7 @@ import exceptions.*;
 public class Token {
     private String token;
     public enum TokenType {
-        oprend_dec, oprend_bool, operator, function
+        oprend_dec, oprend_bool, operator, function, end
     };
     private TokenType type;
 
@@ -20,10 +20,8 @@ public class Token {
         token = _token;
         type = _type;
 
-<<<<<<< HEAD
         OPPTagDefined = false;
 
-=======
         String typeStr;
         switch (_type) {
             case operator:
@@ -38,12 +36,14 @@ public class Token {
             case function:
                 typeStr = "function";
                 break;
+            case end:
+                typeStr = "$";
+                break;
             default:
                 typeStr = "unknown";
-            break;
+                break;
         }
         // System.out.println("%s | %s".formatted(_token, typeStr));
->>>>>>> f6fe0416dfb52df90fd3d1582285daa5d8d054e0
         validate();
     }
 
@@ -96,6 +96,11 @@ public class Token {
                 }
                 return true;
             case function:
+                return true;
+            case end:
+                if (!token.equals("$")) {
+                    throw new LexicalException("Internal Error");
+                }
                 return true;
             default:
                 throw new LexicalException();

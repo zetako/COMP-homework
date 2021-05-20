@@ -4,17 +4,8 @@ import zetako.Pair;
 import zetako.Table;
 import java.util.*;
 
-import exceptions.ExpressionException;
-import exceptions.FunctionCallException;
-import exceptions.MissingLeftParenthesisException;
-import exceptions.MissingOperandException;
-import exceptions.MissingOperatorException;
-import exceptions.MissingRightParenthesisException;
-import exceptions.SyntacticException;
-import exceptions.TrinaryOperationException;
-import exceptions.TypeMismatchedException;
+import exceptions.*;
 import parser.Token.TokenType;
-import sun.jvm.hotspot.code.ExceptionBlob;
 
 import java.io.*;
 
@@ -50,22 +41,22 @@ public class Parser {
 
     private List<Token> stack;
     private List<Token> input;
-    private Token getLastTerminal() {
+    private Token getLastTerminal() throws LexicalException {
         if (stack == null || stack.isEmpty()) {
-            return null;
+            return new Token("$", TokenType.end);
         }
         Integer tmp = stack.size() - 1;
         while (stack.get(tmp).getType() == TokenType.oprend_dec) {
             tmp--;
             if (tmp < 0) {
-                return null;
+                return new Token("$", TokenType.end);
             }
         }
         return stack.get(tmp);
     }
-    private Token getNextInput() {
+    private Token getNextInput() throws LexicalException {
         if (input == null || input.isEmpty()) {
-            return null;
+            return new Token("$", TokenType.end);
         }
         return input.get(0);
     }
@@ -97,13 +88,81 @@ public class Parser {
         }
     }
 
-    private OPPTag(Token token) {
-        if (token.OPPTagDefined) {
-            return token.OPPTag;
+    private String OPPTag(Token token, Integer tokenPosition) {
+        if (!token.OPPTagDefined) {
+            token.OPPTagDefined = true;
+            switch (token.getType()) {
+                case operator:
+                    switch (token.getToken()) {
+                        case "(":
+                        case ")":
+                        case "^":
+                        case "!":
+                        case "&":
+                        case "|":
+                        case "?":
+                        case ":":
+                            token.OPPTag = token.getToken();
+                            break;
+                        case "<":
+                        case "<=":
+                        case ">":
+                        case ">=":
+                        case "=":
+                        case "<>":
+                            token.OPPTag = "compare";
+                            break;
+                        case "*":
+                        case "/":
+                            token.OPPTag = "*/";
+                            break;
+                        case "+":
+                        case "-":
+                            if (stack.get(tokenPosition - 1).getType() != TokenType.oprend_dec && token.getToken().equals("-")) {
+                                token.OPPTag = "minus";
+                            } else {
+                                token.OPPTag = "+-";
+                            }
+                            break;
+                        default:
+                            token.OPPTag = "unknown";
+                            break;
+                    }
+                    break;
+                case function:
+                    switch (token.getToken()) {
+                        case "sin(":
+                        case "cos(":
+                        case "min(":
+                        case "max(":
+                            token.OPPTag = "functionLeft";
+                            break;
+                        case ",":
+                            token.OPPTag = "comma";
+                            break;
+                        case ")":
+                            token.OPPTag = "functionRight";
+                            break;
+                        default:
+                            token.OPPTag = "unknown";
+                            break;
+                    }
+                    break;
+                case oprend_dec:
+                    token.OPPTag = "decimal";
+                    break;
+                case oprend_bool:
+                    token.OPPTag = "boolean";
+                    break;
+                case end:
+                    token.OPPTag = "$";
+                    break;
+                default:
+                    token.OPPTag = "unknown";
+                    break;
+            }
         }
-        switch (token.getType()) {
-            case 
-        }
+        return token.OPPTag;
     }
 
     public Parser(List<Token> tokenStream) {
@@ -116,6 +175,7 @@ public class Parser {
 
     public Double parse() throws ExpressionException {
         Token stackToken, inputToken;
+        String stackTokenTag, inputTokenTag;
 		while(true) {
 			stackToken = getLastTerminal();
             inputToken = getNextInput();
