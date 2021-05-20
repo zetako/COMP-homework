@@ -393,30 +393,30 @@ public class Scanner {
         Boolean flag=true;
         switch (lookahead(1)) {
             case " ":
-                System.out.println("Skip space");
+                // System.out.println("Skip space");
                 lookaheadIndex++;
                 break;
             case "t":
             case "T":
             case "f":
             case "F":
-                System.out.println("start boolean scan");
+                // System.out.println("start boolean scan");
                 flag = boolScan();
                 break;
             case "m":
             case "s":
             case "c":
                 stateCode = 0;
-                System.out.println("start function scan");
+                // System.out.println("start function scan");
                 flag = funcScan();
                 break;
             default:
                 if (Token.operatorSet.contains(lookahead(1))) {
-                    System.out.println("start operator scan");
+                    // System.out.println("start operator scan");
                     flag = opScan();
                 } else if (Character.isDigit(lookahead(1).charAt(0))) {
                     stateCode = 0;
-                    System.out.println("start decimal scan");
+                    // System.out.println("start decimal scan");
                     flag = decScan();
                 } else if (lookahead(1).equals("$")){
                     flag = false;

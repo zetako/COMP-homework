@@ -53,15 +53,21 @@ public class Token {
     public TokenType getType() {
         return type;
     }
-    public Double getDoubleValue() throws Exception {
+    public Double getDoubleValue() throws LexicalException {
         if (type != TokenType.oprend_dec) {
-            throw new Exception();
+            throw new LexicalException("Get Double Value Failed");
         }
-        return Double.parseDouble(token);
+        Double ret = 0.0;
+        try {
+            ret = Double.parseDouble(token);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return ret;
     }
-    public Boolean getBooleanValue() throws Exception {
+    public Boolean getBooleanValue() throws LexicalException {
         if (type != TokenType.oprend_bool) {
-            throw new Exception();
+            throw new LexicalException("Get Boolean Value Failed");
         }
         switch (token) {
             case "true":
@@ -69,7 +75,7 @@ public class Token {
             case "false":
                 return false; 
             default:
-                throw new Exception();
+                throw new LexicalException("Get Boolean Value Failed");
         }
     }
     public Boolean equals(Token otherToken) {
@@ -86,7 +92,7 @@ public class Token {
                     throw new IllegalDecimalException("Invalid Oprend (Number) : " + token);
                 }
             case oprend_bool:
-                if (token.equals("true") || token.equals("false")) {
+                if (!(token.equals("true") || token.equals("false"))) {
                     throw new IllegalIdentifierException("Invalid Oprend (Boolean) : " + token);
                 }
                 return true;

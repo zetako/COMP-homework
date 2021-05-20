@@ -4,8 +4,6 @@ package parser;
  * Science, SUN YAT-SEN UNIVERSITY. All rights reserved.
 **/
 
-import parser.Scanner;
-
 import exceptions.*;
 
 /**
@@ -30,8 +28,8 @@ public class Calculator
 		Scanner scan = new Scanner(expression);
 		scan.scan();
 		scan.printStream();
-		// You should substitute this method body ...
-		double result = ((int) (Math.random() * 1000000000)) / 100.0;
+		Parser parse = new Parser(scan.tokenStream);
+		Double result = parse.parse();
 		return result;
 	}
 }

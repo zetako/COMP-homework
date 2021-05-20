@@ -5,6 +5,7 @@ src-self = src/parser/Calculator.java
 build: bin/calculator.class
 
 bin/calculator.class: $(src-self)
+	cd src; javac -d ../bin zetako/*.java
 	cd src; javac -d ../bin -classpath ../bin parser/*.java
 
 doc: $(src-self)
