@@ -64,8 +64,46 @@ public class Parser {
         stack.add(input.get(0));
         input.remove(0);
     }
-    private void reduce() {
+	private void reduceOperator(Token toReduce) throws ExpressionException {
+		if (toReduce.getType() != TokenType.operator) {
+            throw new ExpressionException("Failed to reduce operator");
+        }
+    	switch (toReduce.getToken()) {
+            case "":
+                
+                break;
+        
+            default:
+                break;
+        }
+    }
+    private void reduceFunction(Token toReduce) {
 
+    }
+
+    private void reduce(Token toReduce) throws ExpressionException {
+		switch (toReduce.getType()) {
+            case operator:
+                reduceOperator(toReduce);
+            	break;
+        	case function:
+            	reduceFunction(toReduce);
+            	break;
+            default:
+            	throw new ExpressionException("Failed to reduce");
+        }
+    }
+    private Double accept() throws MissingOperatorException {
+		if (stack.size() != 1 || stack.get(0).getType() != TokenType.oprend_dec) {
+            throw new MissingOperatorException("Parse finish but 1+ oprand in stack");
+        }
+        Double ret = 0.0;
+        try {
+            ret = stack.get(0).getDoubleValue();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return ret;
     }
     private void error(String OPPTag) throws ExpressionException {
 		switch (OPPTag) {
@@ -88,7 +126,7 @@ public class Parser {
         }
     }
 
-    private String OPPTag(Token token, Integer tokenPosition) {
+    private String OPPTag(Token token) {
         if (!token.OPPTagDefined) {
             token.OPPTagDefined = true;
             switch (token.getType()) {
@@ -118,7 +156,7 @@ public class Parser {
                             break;
                         case "+":
                         case "-":
-                            if (stack.get(tokenPosition - 1).getType() != TokenType.oprend_dec && token.getToken().equals("-")) {
+                            if (stack.get(stack.size() - 1).getType() != TokenType.oprend_dec && token.getToken().equals("-")) {
                                 token.OPPTag = "minus";
                             } else {
                                 token.OPPTag = "+-";
@@ -176,28 +214,26 @@ public class Parser {
     public Double parse() throws ExpressionException {
         Token stackToken, inputToken;
         String stackTokenTag, inputTokenTag;
+        String OPPOperation;
 		while(true) {
 			stackToken = getLastTerminal();
             inputToken = getNextInput();
-            if (stackToken == null && inputToken != null) { // stack is empty, directly shift
-                shift();
-            } else if (stackToken != null && inputToken == null) {
-                reduce();
-            } else if (stackToken == null && inputToken == null) {
-                if (stack.size() != 1) { // error : if still 1+ decimal in stack, error
-                    throw new MissingOperatorException("Parse finish but still 1+ decimal in stack");
-                } else if (stack.get(0).getType() != TokenType.oprend_dec) {
-                    throw new SyntacticException("Unknown Excption when accepting");
-                } else {
-                    try {
-                        Double ret = stack.get(0).getDoubleValue();
-                        return ret;
-                    } catch (Exception e) {
-                        throw new SyntacticException("Get wrong content of decimal token when accepting");
-                    }
-                }
-            } else {
-	
+            stackTokenTag = OPPTag(stackToken);
+            inputTokenTag = OPPTag(inputToken);
+
+            OPPOperation = OPPTable.get(stackTokenTag, inputTokenTag);
+            switch (OPPOperation) {
+                case "reduce":
+                    reduce(stackToken);
+                    break;
+            	case "shift":
+                	shift();
+                    break;
+                case "accept":
+                	return accept();
+                default:
+                	error(OPPOperation);
+                    break;
             }
         }
     }
