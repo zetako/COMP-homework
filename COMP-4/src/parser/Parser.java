@@ -431,7 +431,6 @@ public class Parser {
      * @throws TypeMismatchedException arguments type wrong
      * @throws FunctionCallException read arguments failed because can't find "," or reach bottom of stack
      * @throws IllegalIndetifierException should never throw, no matching function name
-     * @throws ExpressionException
      */
     private void VariFunctionReduce(Token toReduce, String funcName) throws ExpressionException {
         if (!toReduce.equals(stack.get(stack.size() - 1))) {
@@ -485,6 +484,15 @@ public class Parser {
         popStack(popNum);
         stack.add(new Token(result.toString(), TokenType.oprend_dec));
     }
+    /**
+     * Reduce opreator, invoke detail reduce function
+     * @param toReduce token that invoke reduce, should be ")"
+     * @throws FunctionCallException no function match
+     * @throws FunctionCallException try match function name but get ")"
+     * 
+     * @see Parser#unaryFunctionReduce(Token)
+     * @see Parser#VariFunctionReduce(Token, String)
+     */
     private void reduceFunction(Token toReduce) throws ExpressionException {
         Integer index = stack.size() - 2;
         Token tmpToken;
@@ -518,6 +526,14 @@ public class Parser {
         }
     }
 
+    /**
+     * Action reduce, invoke detailed functions
+     * @param toReduce token that invoke reduce
+     * @throws ExpressionException should never throws, no function or operator to be reduce
+     * 
+     * @see Parser#reduceFunction(Token)
+     * @see Parser#reduceOperator(Token)
+     */
     private void reduce(Token toReduce) throws ExpressionException {
 		switch (toReduce.getType()) {
             case operator:
@@ -530,6 +546,11 @@ public class Parser {
             	throw new ExpressionException("Failed to reduce");
         }
     }
+    /**
+     * Action accept, check stack and return result
+     * @return return result after all these reduce
+     * @throws MissingOperatorException still 2 or more token in stack
+     */
     private Double accept() throws MissingOperatorException {
 		if (stack.size() != 1 || stack.get(0).getType() != TokenType.oprend_dec) {
             throw new MissingOperatorException("Parse finish but 1+ oprand in stack");
@@ -542,6 +563,11 @@ public class Parser {
         }
         return ret;
     }
+    /**
+     * Action Error, throw the table defined exceptions
+     * @param OPPTag OPPTag form the table
+     * @throws ExpressionException error defined in table
+     */
     private void error(String OPPTag) throws ExpressionException {
 		switch (OPPTag) {
             case "error1":
@@ -563,6 +589,11 @@ public class Parser {
         }
     }
 
+    /**
+     * get or define the OPPtag of a token
+     * @param token the token
+     * @return OPPTag of this token
+     */
     private String OPPTag(Token token) {
         if (!token.OPPTagDefined) {
             token.OPPTagDefined = true;
@@ -640,6 +671,10 @@ public class Parser {
         return token.OPPTag;
     }
 
+    /**
+     * Constructor, init members and read table
+     * @param tokenStream
+     */
     public Parser(List<Token> tokenStream) {
         input = tokenStream;
         stack = new ArrayList<Token>();
@@ -648,6 +683,11 @@ public class Parser {
         readOPPTable("../OPPTable.csv");
     }
 
+    /**
+     * Function exposed for calling
+     * @return normally it returns true
+     * @throws ExpressionException throw by {@link Parser#reduce(Token)}
+     */
     public Double parse() throws ExpressionException {
         Token stackToken, inputToken;
         String stackTokenTag, inputTokenTag;
