@@ -4,16 +4,44 @@ import java.util.*;
 import exceptions.*;
 import parser.Token.TokenType;
 
+
+/**
+ * Scan a raw string (expression from frontend) to list of token
+ * @author zetako
+ * @version 2.3
+ */
 public class Scanner {
+    /**
+     * Scanning result, list of token; an ArrayList
+     */
     public List<Token> tokenStream;
 
+    /**
+     * Index for lookahead, point to lookahead character
+     */
     private Integer lookaheadIndex;
+    /**
+     * Index for substring, modified by private funcions like {@link Scanner#decState()}
+     */
     private Integer start, end;
+    /**
+     * State code for DFAs, it's share by each sub-DFA
+     */
     private Integer stateCode;
+    /**
+     * Input raw string (expression get by frontend)
+     */
     private String rawString;
 
+    /**
+     * A set contain tokens that match a right bracket, including functions and left bracket
+     */
     private Set<Token> leftBracket;
 
+    /**
+     * Constructor, init members
+     * @param raw input raw string
+     */
     public Scanner(String raw) {
         rawString = raw;
         stateCode = 0;
@@ -32,6 +60,9 @@ public class Scanner {
         }
     }
 
+    /**
+     * A debug oriented function to print token stream
+     */
     public void printStream() {
         // System.out.println("Stream length: %d".formatted(tokenStream.size()));
         for (Token token : tokenStream) {
@@ -57,6 +88,11 @@ public class Scanner {
         }
     }
 
+    /**
+     * Get lookahead
+     * @param n length to get
+     * @return lookahead
+     */
     private String lookahead(Integer n) {
         if (lookaheadIndex + n - 1 >= rawString.length()) {
             return "$";
@@ -65,6 +101,14 @@ public class Scanner {
         }
     }
 
+    /**
+     * Conresponding a DFA state of func DFA
+     * @return return false means DFA terminates
+     * @throws IllegalIdentifierException no function name match
+     * @throws FunctionCallException variable function with no comma
+     * @throws FunctionCallException bracket not close
+     * @throws ExpressionException at a state that should never reach
+     */
     private Boolean funcState() throws ExpressionException {
         String tmp = lookahead(1);
         Character tmpChar = tmp.charAt(0);
@@ -223,11 +267,16 @@ public class Scanner {
                 }
                 break;
             default:
-                throw new IllegalSymbolException("Unknown Exception in Function scaning at pos %d".formatted(lookaheadIndex));
+                throw new ExpressionException("Unknown Exception in Function scaning at pos %d".formatted(lookaheadIndex));
         }
         return true;
     }
 
+    /**
+     * Main function for scanning func
+     * @return normally it returns true
+     * @throws ExpressionException throw by {@link Scanner#funcState()}
+     */
     private Boolean funcScan() throws ExpressionException {
         Boolean flag = true;
         stateCode = 0;
@@ -237,7 +286,17 @@ public class Scanner {
         }
         return true;
     }
-    private Boolean decState() throws ExpressionException{
+
+    /**
+     * Conresponding a DFA state of decimal DFA
+     * @return return false means DFA terminates
+     * @throws IllegalDecimalException decimal not start with digit
+     * @throws IllegalDecimalException no digit after "."
+     * @throws IllegalDecimalException no +/-/digit after E/e
+     * @throws IllegalDecimalException no digit after +/-
+     * @throws LexicalException normally no throws
+     */
+    private Boolean decState() throws LexicalException{
         String tmp = lookahead(1);
         // System.out.println("This lookahead \"%s\"".formatted(tmp));
         Character tmpChar = tmp.charAt(0);
@@ -341,6 +400,11 @@ public class Scanner {
         }
         return true;
     }
+    /**
+     * Main function for scanning decimal
+     * @return normally it returns true
+     * @throws ExpressionException throw by {@link Scanner#decState()}
+     */
     private Boolean decScan() throws ExpressionException {
         Boolean flag = true;
         stateCode = 0;
@@ -351,7 +415,12 @@ public class Scanner {
         return true;
     }
 
-    private Boolean boolScan() throws ExpressionException {
+    /**
+     * Scan boolean
+     * @return normally it returns true
+     * @throws IlleaglSymbolException not match true/false
+     */
+    private Boolean boolScan() throws LexicalException {
         String tmp = lookahead(4).toLowerCase();
         if (tmp.equals("true")) {
             lookaheadIndex += 4;
@@ -370,7 +439,12 @@ public class Scanner {
         return true;
     }
 
-    private Boolean opScan() throws ExpressionException {
+    /**
+     * Scan operator
+     * @return normally it returns true
+     * @throws IlleaglSymbolException no matching operator
+     */
+    private Boolean opScan() throws LexicalException {
         String tmp = lookahead(2);
         if (Token.operatorSet.contains(tmp)) {
             lookaheadIndex += 2;
@@ -389,6 +463,15 @@ public class Scanner {
         return true;
     }
 
+    /**
+     * Main function to invoke sub-DFA
+     * @return return false means DFA terminates
+     * @throws IllegalSymbolException no matching lexical rule
+     * @see Scanner#boolScan()
+     * @see Scanner#funcScan()
+     * @see Scanner#decScan()
+     * @see Scanner#opScan()
+     */
     private Boolean exprScan() throws ExpressionException {
         Boolean flag=true;
         switch (lookahead(1)) {
@@ -428,10 +511,11 @@ public class Scanner {
         return flag;
     }
 
-
-
-    
-
+    /**
+     * Function exposed for calling
+     * @return normally it returns true
+     * @throws ExpressionException throw by {@link Scanner#exprScan()}
+     */
     public Boolean scan() throws ExpressionException {
         Boolean flag = true;
         while (flag && lookaheadIndex != rawString.length()) {

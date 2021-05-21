@@ -8,8 +8,22 @@ import parser.Token.TokenType;
 
 import java.io.*;
 
+/**
+ * Parse list of token from {@link Scanner}, using OPP
+ * @author zetako
+ * @version 1.1
+ */
 public class Parser {
+    /**
+     * OPP table, using {@link zetako.Table} <br>
+     * using 2 token OPPTag(String) to locate a action
+     */
     private Table<String, String, String> OPPTable;
+    /**
+     * Read OPP table formatted in .csv by path
+     * @param csvPath file's path
+     * @return return true when read success
+     */
 	public Boolean readOPPTable(String csvPath) {
         File csv = new File(csvPath);
         try {
@@ -38,8 +52,18 @@ public class Parser {
         return true;
     }
 
+    /**
+     * OPP stack, shifted tokens, implement as ArrayList
+     */
     private List<Token> stack;
+    /**
+     * OPP input stack, unshifted tokens, implement as ArrayList <br>
+     * it init using token stream provided by scanner
+     */
     private List<Token> input;
+    /**
+     * Debug oriented function for print stack and input
+     */
     private void printStacks() {
         for (Token token : stack) {
             System.out.print(token.getToken() + " ");
@@ -50,6 +74,11 @@ public class Parser {
         }
         System.out.println(" ");
     }
+    /**
+     * Get the 1st terminal at top of stack, decimal and boolean is treated as nonterminal
+     * @return return the terminal token
+     * @throws LexicalException throw by {@link Token#Token(String, TokenType)}
+     */
     private Token getLastTerminal() throws LexicalException {
         if (stack == null || stack.isEmpty()) {
             return new Token("$", TokenType.end);
@@ -63,23 +92,43 @@ public class Parser {
         }
         return stack.get(tmp);
     }
+    /**
+     * Get the next token of input
+     * @return the next token
+     * @throws LexicalException throw by {@link Token#Token(String, TokenType)}
+     */
     private Token getNextInput() throws LexicalException {
         if (input == null || input.isEmpty()) {
             return new Token("$", TokenType.end);
         }
         return input.get(0);
     }
+    /**
+     * Pop n token at top of stacks, pop failed is not catch
+     * @param n pop number
+     */
     private void popStack(Integer n) {
         for (int i = 0; i < n; i++) {
             stack.remove(stack.size() - 1);
         }
     }
 
+    /**
+     * Action shift, move a token from input to stack
+     */
     private void shift() {
         stack.add(input.get(0));
         input.remove(0);
     }
 
+    /**
+     * Reduce for operators that cal 2 decimal to 1 decimal, like D->D+D
+     * @param toReduce token to reduce, the operator
+     * @throws MissingOperatorException 2 or more decimal at top of operator is not allowed
+     * @throws MissingOperatorException must be decimal before/after operator
+     * @throws DividedByZeroException 0 after operator "/"
+     * @throws SyntacticException should never throw, an unknown operator
+     */
     private void twoDecimalReduce(Token toReduce) throws ExpressionException {
         Double tmp1, tmp2;
         Double result = 0.0;
@@ -125,6 +174,13 @@ public class Parser {
 
         stack.add(new Token(result.toString(), TokenType.oprend_dec));
     }
+    /**
+     * Reduce for operators that cal 2 decimal to 1 boolean, like D->D=D
+     * @param toReduce token to reduce, the operator
+     * @throws MissingOperatorException 2 or more boolean at top of operator is not allowed
+     * @throws MissingOperatorException must be decimal before/after operator
+     * @throws SyntacticException should never throw, an unknown operator
+     */
     private void compareReduce(Token toReduce) throws ExpressionException {
         Double tmp1, tmp2;
         Boolean result = true;
@@ -170,6 +226,14 @@ public class Parser {
 
         stack.add(new Token(result.toString(), TokenType.oprend_bool));
     }
+    /**
+     * 
+     * Reduce for operators that cal 2 boolean to 1 boolean, like D->D|D
+     * @param toReduce token to reduce, the operator
+     * @throws MissingOperatorException 2 or more boolean at top of operator is not allowed
+     * @throws MissingOperatorException must be boolean before/after operator
+     * @throws SyntacticException should never throw, an unknown operator
+     */
     private void twoBooleanReduce(Token toReduce) throws ExpressionException {
         Boolean tmp1, tmp2;
         Boolean result;
@@ -203,6 +267,24 @@ public class Parser {
 
         stack.add(new Token(result.toString(), TokenType.oprend_bool));
     }
+    /**
+     * Reduce opreator, invoke detail reduce function or directly reduce
+     * @param toReduce token to reduce, the operator
+     * @throws ExpressionException should never throw, toReduce is not an operator
+     * @throws MissingOperatorException any token after ")" is not allowed
+     * @throws MissingleftParenthesisException "(" not found
+     * @throws TypeMismatchedException no decimal/boolean inside "()"
+     * 
+     * @throws MissingOperatorException 2 or more tokens after -(minus)/!
+     * @throws MissingOperendException not matching tokens for -(minus)/!
+     * 
+     * @throws MissingOperatorException 2 or more tokens after ":"
+     * @throws TrinaryOperationException "?" not found
+     * @throws MissingOperandException "A?B:C" A, B or C not match
+     * @see Parser#twoDecimalReduce(Token)
+     * @see Parser#compareReduce(Token)
+     * @see Parser#twoBooleanReduce(Token)
+     */
 	private void reduceOperator(Token toReduce) throws ExpressionException {
 		if (toReduce.getType() != TokenType.operator) {
             throw new ExpressionException("Failed to reduce operator");
@@ -304,6 +386,13 @@ public class Parser {
         }
     }
 
+    /**
+     * Reduce functions with single argument(sin(), cos())
+     * @param toReduce token that invoke reduce, should be ")"
+     * @throws MissingOperatorException ")" should at top of the stack
+     * @throws FunctionCallException no matching function name
+     * @throws FunctionCallException not matching type for function argument
+     */
     private void unaryFunctionReduce(Token toReduce) throws ExpressionException {
         Token tmpToken;
         if (!toReduce.equals(stack.get(stack.size() - 1))) {
@@ -316,7 +405,7 @@ public class Parser {
         }
         tmpToken = stack.get(stack.size() - 2);
         if  (tmpToken.getType() != TokenType.oprend_dec) {
-            throw new FunctionCallException("Boolean excepted for function %s )".formatted(funcName));
+            throw new FunctionCallException("Decimal excepted for function %s )".formatted(funcName));
         }
         Double result = tmpToken.getDoubleValue();
         switch (funcName) {
@@ -334,6 +423,16 @@ public class Parser {
         popStack(3);
         stack.add(new Token(result.toString(), TokenType.oprend_dec));
     }
+    /**
+     * Reduce functions with multiple arguments(max(), min())
+     * @param toReduce token that invoke reduce, should be ")"
+     * @param funcName function name
+     * @throws MissingOperatorException ")" should at top of the stack
+     * @throws TypeMismatchedException arguments type wrong
+     * @throws FunctionCallException read arguments failed because can't find "," or reach bottom of stack
+     * @throws IllegalIndetifierException should never throw, no matching function name
+     * @throws ExpressionException
+     */
     private void VariFunctionReduce(Token toReduce, String funcName) throws ExpressionException {
         if (!toReduce.equals(stack.get(stack.size() - 1))) {
             // printStacks();

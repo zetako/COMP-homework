@@ -3,19 +3,52 @@ package parser;
 import java.util.*;
 import exceptions.*;
 
+/**
+ * Represent a token scanned
+ * @author zetako
+ * @version 1.2
+ */
 public class Token {
+    /**
+     * Token's content
+     */
     private String token;
+    /**
+     * Token's type's enum
+     */
     public enum TokenType {
         oprend_dec, oprend_bool, operator, function, end
     };
+    /**
+     * Token's type
+     */
     private TokenType type;
 
+    /**
+     * OPPTag for OPP table looking, modify by outer function; this represents defined or not
+     */
     public Boolean OPPTagDefined;
+    /**
+     * OPPTag for OPP table looking, modify by outer function
+     */
     public String OPPTag;
 
+    /**
+     * A string to init operatorSet
+     */
     private static final String operatorStr = "(,),-,^,*,/,+,=,<>,<,<=,>,>=,!,&,|,?,:";
+    /**
+     * A set for matching operator
+     */
     public static final Set<String> operatorSet = new HashSet<String>(Arrays.asList(operatorStr.split(",")));
 
+    /**
+     * Constructor, init members and validation
+     * @param _token token content string
+     * @param _type token type
+     * @throws LexicalException exception throw by validation
+     * @see Token#validate()
+     */
     public Token(String _token, TokenType _type) throws LexicalException{
         token = _token;
         type = _type;
@@ -47,12 +80,25 @@ public class Token {
         validate();
     }
 
+    /**
+     * Simple function to get token
+     * @return token's content
+     */
     public String getToken() {
         return token;
     }
+    /**
+     * Simple function to get token type
+     * @return token's type
+     */
     public TokenType getType() {
         return type;
     }
+    /**
+     * Function to get token's value
+     * @return if token is decimal, it returns its value
+     * @throws LexicalException if token is not decimal, this exception throws
+     */
     public Double getDoubleValue() throws LexicalException {
         if (type != TokenType.oprend_dec) {
             throw new LexicalException("Get Double Value Failed");
@@ -65,6 +111,11 @@ public class Token {
         }
         return ret;
     }
+    /**
+     * Function to get token's value
+     * @return if token is boolean, it returns its value
+     * @throws LexicalException if token is not boolean, this exception throws
+     */
     public Boolean getBooleanValue() throws LexicalException {
         if (type != TokenType.oprend_bool) {
             throw new LexicalException("Get Boolean Value Failed");
@@ -78,10 +129,23 @@ public class Token {
                 throw new LexicalException("Get Boolean Value Failed");
         }
     }
+    /**
+     * Equals function, it's not an override of Object's equals
+     * @param otherToken other token
+     * @return if two token has same type and content, they are equal
+     */
     public Boolean equals(Token otherToken) {
         return (token.equals(otherToken.token)) && (type == otherToken.type);
     }
 
+    /**
+     * Validation for token's member
+     * @return normally, it return true representing a good match
+     * @throws IllegalDecimalException content not match type decimal
+     * @throws IllegalIdentifierException content not match type boolean
+     * @throws IllegalSymbolException content not match type operator
+     * @throws LexicalException unknown type, normally it should not occur
+     */
     public Boolean validate() throws LexicalException {
         switch (type) {
             case oprend_dec:
