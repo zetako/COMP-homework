@@ -9,7 +9,8 @@ bin/calculator.class: $(src-self)
 	cd src; javac -d ../bin -classpath ../bin parser/*.java
 
 doc: $(src-self)
-	javadoc -private -author -version -d ../doc -classpath ../bin parser/*.java
+	cd src; javadoc -private -author -version -d ../bin zetako/*.java
+	cd src; javadoc -private -author -version -d ../doc -classpath ../bin parser/*.java
 
 run: build
 	cd bin; java ExprEval
